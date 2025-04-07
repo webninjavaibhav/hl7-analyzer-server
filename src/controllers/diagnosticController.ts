@@ -63,6 +63,24 @@ export async function processDiagnosticFile(req: Request, res: Response): Promis
       result.patient.gender
     );
     
+    // Calculate overall health score
+    const totalTests = result.observations.length;
+    const abnormalCount = abnormalResults.length;
+    const normalCount = totalTests - abnormalCount;
+    
+    // Calculate health percentage (weighted more heavily for normal results)
+    const healthScore = Math.round((normalCount / totalTests) * 100);
+    
+    // Determine health status based on score
+    let healthStatus = 'Excellent';
+    if (healthScore < 60) {
+      healthStatus = 'Poor';
+    } else if (healthScore < 80) {
+      healthStatus = 'Fair';
+    } else if (healthScore < 90) {
+      healthStatus = 'Good';
+    }
+    
     console.log(`✓ Processed ${result.observations.length} observations`.green);
     if (abnormalResults.length > 0) {
       console.log(`⚠ Found ${abnormalResults.length} abnormal results`.yellow);
@@ -70,14 +88,21 @@ export async function processDiagnosticFile(req: Request, res: Response): Promis
       console.log('✓ No abnormal results found'.green);
     }
     
-    // Return success response with patient data, observations, and abnormal results
+    // Return success response with patient data, observations, abnormal results and health assessment
     res.status(200).json({
       success: true,
       message: `Processed results for patient ${result.patient.name}`,
       data: {
         patient: result.patient,
         observations: result.observations,
-        abnormalResults
+        abnormalResults,
+        healthAssessment: {
+          score: healthScore,
+          status: healthStatus,
+          totalTests,
+          normalTests: normalCount,
+          abnormalTests: abnormalCount
+        }
       }
     });
   } catch (error) {
