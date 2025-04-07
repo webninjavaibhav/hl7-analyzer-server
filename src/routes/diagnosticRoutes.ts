@@ -28,7 +28,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 const uploadMiddleware = upload.single('file');
 router.post('/process', uploadMiddleware as any, (req: Request, res: Response, next: NextFunction) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    console.error('✗ No file uploaded'.red);
+    return res.status(400).json({ 
+      success: false,
+      error: 'No file uploaded or invalid file format' 
+    });
   }
   next();
 }, processDiagnosticFile);
