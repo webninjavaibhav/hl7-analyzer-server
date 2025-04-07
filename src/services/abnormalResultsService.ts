@@ -104,6 +104,7 @@ export function calculateAbnormalResult(
   
   // Parse the reference range from the observation if available
   let isAbnormal = false;
+  let riskInfo = { riskPercentage: 0, riskValue: 'Normal' };
   
   if (observation.referenceRange) {
     console.log(`📐 Using observation reference range: ${observation.referenceRange}`.cyan);
@@ -112,10 +113,16 @@ export function calculateAbnormalResult(
     if (observation.referenceRange.startsWith('<')) {
       const upperLimit = parseFloat(observation.referenceRange.substring(1));
       isAbnormal = observation.value >= upperLimit;
+      if (isAbnormal) {
+        riskInfo = calculateRisk(observation.value, 0, upperLimit);
+      }
       console.log(`Upper limit only: <${upperLimit}, isAbnormal: ${isAbnormal ? '⚠'.yellow : '✓'.green}`);
     } else if (observation.referenceRange.startsWith('>')) {
       const lowerLimit = parseFloat(observation.referenceRange.substring(1));
       isAbnormal = observation.value <= lowerLimit;
+      if (isAbnormal) {
+        riskInfo = calculateRisk(observation.value, lowerLimit, lowerLimit * 2);
+      }
       console.log(`Lower limit only: >${lowerLimit}, isAbnormal: ${isAbnormal ? '⚠'.yellow : '✓'.green}`);
     } else {
       // Try to parse the reference range from the observation
@@ -131,10 +138,13 @@ export function calculateAbnormalResult(
         // Check if the value is outside the reference range
         if (lowerOp === '<' && observation.value >= lower) {
           isAbnormal = true;
+          riskInfo = calculateRisk(observation.value, 0, lower);
         } else if (upperOp === '>' && upper !== null && observation.value <= upper) {
           isAbnormal = true;
+          riskInfo = calculateRisk(observation.value, upper, upper * 2);
         } else if (!lowerOp && !upperOp && (observation.value < lower || (upper !== null && observation.value > upper))) {
           isAbnormal = true;
+          riskInfo = calculateRisk(observation.value, lower, upper || lower * 2);
         }
       } else {
         console.log(`⚠ Could not parse reference range: ${observation.referenceRange}`.yellow);
@@ -142,6 +152,9 @@ export function calculateAbnormalResult(
         isAbnormal = 
           observation.value < metric.everlab_lower || 
           observation.value > metric.everlab_higher;
+        if (isAbnormal) {
+          riskInfo = calculateRisk(observation.value, metric.everlab_lower, metric.everlab_higher);
+        }
       }
     }
   } else {
@@ -150,6 +163,9 @@ export function calculateAbnormalResult(
     isAbnormal = 
       observation.value < metric.everlab_lower || 
       observation.value > metric.everlab_higher;
+    if (isAbnormal) {
+      riskInfo = calculateRisk(observation.value, metric.everlab_lower, metric.everlab_higher);
+    }
   }
   
   console.log(`Result: ${isAbnormal ? '⚠ ABNORMAL'.yellow : '✓ Normal'.green}`);
@@ -164,7 +180,9 @@ export function calculateAbnormalResult(
     isAbnormal,
     metricName: metric.name,
     standardRange,
-    everlabRange
+    everlabRange,
+    riskPercentage: riskInfo.riskPercentage,
+    riskValue: riskInfo.riskValue
   };
 }
 
