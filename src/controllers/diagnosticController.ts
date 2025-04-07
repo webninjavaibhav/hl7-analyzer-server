@@ -71,14 +71,19 @@ export async function processDiagnosticFile(req: Request, res: Response): Promis
     // Calculate health percentage (weighted more heavily for normal results)
     const healthScore = Math.round((normalCount / totalTests) * 100);
     
-    // Determine health status based on score
+    // Determine health status and message based on score
     let healthStatus = 'Excellent';
+    let healthMessage = 'Your test results indicate excellent overall health. Keep maintaining your healthy lifestyle!';
+    
     if (healthScore < 60) {
       healthStatus = 'Poor';
+      healthMessage = 'Your test results suggest some areas that need attention. We recommend scheduling a follow-up with your healthcare provider to discuss these results.';
     } else if (healthScore < 80) {
       healthStatus = 'Fair';
+      healthMessage = 'Your test results show some areas for improvement. Consider discussing these results with your healthcare provider to develop a plan for better health.';
     } else if (healthScore < 90) {
       healthStatus = 'Good';
+      healthMessage = 'Your test results indicate good overall health. Continue your healthy habits and regular check-ups.';
     }
     
     console.log(`✓ Processed ${result.observations.length} observations`.green);
@@ -99,6 +104,7 @@ export async function processDiagnosticFile(req: Request, res: Response): Promis
         healthAssessment: {
           score: healthScore,
           status: healthStatus,
+          message: healthMessage,
           totalTests,
           normalTests: normalCount,
           abnormalTests: abnormalCount
