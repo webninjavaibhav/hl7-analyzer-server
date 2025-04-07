@@ -30,7 +30,7 @@ async function parseCSV(filePath: string): Promise<any[]> {
  * Loads diagnostic metrics from CSV file
  */
 async function loadMetrics(): Promise<void> {
-  const filePath = path.join(__dirname, '../../files/diagnostic_metrics.csv');
+  const filePath = path.join(__dirname, '../../diagnostics-files/diagnostic_metrics.csv');
   const records = await parseCSV(filePath);
   
   metrics = records.map((record: any) => ({
@@ -63,7 +63,7 @@ async function loadMetrics(): Promise<void> {
  * Loads diagnostics from CSV file
  */
 async function loadDiagnostics(): Promise<void> {
-  const filePath = path.join(__dirname, '../../files/diagnostics.csv');
+  const filePath = path.join(__dirname, '../../diagnostics-files/diagnostics.csv');
   const records = await parseCSV(filePath);
   diagnostics = records.map((record: any) => ({
     id: record.id,
@@ -77,7 +77,7 @@ async function loadDiagnostics(): Promise<void> {
  * Loads diagnostic groups from CSV file
  */
 async function loadDiagnosticGroups(): Promise<void> {
-  const filePath = path.join(__dirname, '../../files/diagnostic_groups.csv');
+  const filePath = path.join(__dirname, '../../diagnostics-files/diagnostic_groups.csv');
   const records = await parseCSV(filePath);
   diagnosticGroups = records.map((record: any) => ({
     id: record.id,
@@ -91,7 +91,7 @@ async function loadDiagnosticGroups(): Promise<void> {
  * Loads conditions from CSV file
  */
 async function loadConditions(): Promise<void> {
-  const filePath = path.join(__dirname, '../../files/conditions.csv');
+  const filePath = path.join(__dirname, '../../diagnostics-files/conditions.csv');
   const records = await parseCSV(filePath);
   conditions = records.map((record: any) => ({
     id: record.id,
