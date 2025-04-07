@@ -4,7 +4,7 @@
  * multer for handling file uploads
  * processDiagnosticFile controller for processing diagnostic files
  */
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { processDiagnosticFile } from '../controllers/diagnosticController';
 
@@ -25,6 +25,12 @@ const upload = multer({ storage: multer.memoryStorage() });
  * Accepts a single file upload with field name 'file'
  * Processes the file using processDiagnosticFile controller
  */
-router.post('/process', upload.single('file'), processDiagnosticFile);
+const uploadMiddleware = upload.single('file');
+router.post('/process', uploadMiddleware as any, (req: Request, res: Response, next: NextFunction) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  next();
+}, processDiagnosticFile);
 
 export default router;
