@@ -15,6 +15,24 @@ interface PatientDetails {
 }
 
 export function parseHL7ORU(fileContent: string): { patient: PatientDetails; observations: HL7ParsedObservation[] } {
+  // Validate if the file is a valid HL7 message
+  if (!fileContent || typeof fileContent !== 'string') {
+    throw new Error('Invalid file content: File content must be a non-empty string');
+  }
+
+  // Check for MSH segment which is mandatory in HL7 messages
+  const hasMSHSegment = fileContent.includes('MSH|');
+  if (!hasMSHSegment) {
+    throw new Error('Invalid HL7 file: Missing MSH segment');
+  }
+
+  // Check for required segments
+  const hasRequiredSegments = fileContent.includes('PID|') && 
+                            (fileContent.includes('OBX|') || fileContent.includes('OBR|'));
+  if (!hasRequiredSegments) {
+    throw new Error('Invalid HL7 file: Missing required segments (PID and OBX/OBR)');
+  }
+
   const lines = fileContent.split(/\r?\n/);
   const observations: HL7ParsedObservation[] = [];
   const patient: PatientDetails = {
@@ -44,6 +62,15 @@ export function parseHL7ORU(fileContent: string): { patient: PatientDetails; obs
         }
         break;
     }
+  }
+
+  // Validate parsed data
+  if (!patient.id || !patient.name) {
+    throw new Error('Invalid HL7 file: Missing required patient information');
+  }
+
+  if (observations.length === 0) {
+    throw new Error('Invalid HL7 file: No valid observations found');
   }
 
   return { patient, observations };
